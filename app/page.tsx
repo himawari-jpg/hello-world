@@ -34,7 +34,7 @@ export default async function Home() {
     query: queries.listTodos
   });
 
-  const todos = data.listTodos.items;
+  const todos = data?.listTodos?.items ?? [];
 
   return (
     <div
