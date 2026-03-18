@@ -24,7 +24,7 @@ export default function EditInvoiceForm({
   const [state, formAction] = useActionState(updateInvoiceWithId, initialState);
 
   // ヘルパー関数：エラーを安全に取得
-  const renderErrors = (key: string) => {
+  const renderErrors = (key: keyof NonNullable<typeof state.errors>) => {
     return state.errors?.[key]?.map((error: string, idx: number) => (
       <p className="mt-2 text-sm text-red-500" key={idx}>
         {error}
