@@ -11,7 +11,7 @@ export default function SideNav() {
   const router = useRouter();
 
   async function handleSignOut() {
-    await signOut();
+    await signOut({ global: true });
     router.push('/login');
   }
 
