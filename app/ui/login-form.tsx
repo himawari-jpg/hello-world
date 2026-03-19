@@ -8,7 +8,7 @@ export default function LoginForm() {
   const router = useRouter();
 
   return (
-    <Authenticator hideSignUp={true}>
+    <Authenticator>
       {({ signOut, user }) => {
         if (user) {
           router.push('/dashboard');
