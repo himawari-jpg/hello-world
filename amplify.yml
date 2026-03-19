@@ -1,4 +1,9 @@
 version: 1
+backend:
+  phases:
+    build:
+      commands:
+        - echo "Backend managed via Amplify CLI separately"
 frontend:
   phases:
     preBuild:
