@@ -1,5 +1,6 @@
 'use client';
 
+import 'aws-amplify/auth/enable-oauth-listener';
 import { useEffect } from 'react';
 import { Amplify } from 'aws-amplify';
 import { Hub } from 'aws-amplify/utils';
