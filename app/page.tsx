@@ -60,7 +60,7 @@ export default async function Home() {
       {/* 4. Display todos*/}
       <ul>
         {todos.map((todo) => {
-          return <li style={{ listStyle: 'none' }}>{todo.name}</li>;
+          return <li key={todo.id} style={{ listStyle: 'none' }}>{todo.name}</li>;
         })}
       </ul>
     </div>
