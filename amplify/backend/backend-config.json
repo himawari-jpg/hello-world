@@ -33,7 +33,11 @@
         "signupAttributes": [
           "EMAIL"
         ],
-        "socialProviders": [],
+        "socialProviders": [
+          "FACEBOOK",
+          "GOOGLE",
+          "AMAZON"
+        ],
         "usernameAttributes": [],
         "verificationMechanisms": [
           "EMAIL"

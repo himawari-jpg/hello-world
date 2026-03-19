@@ -56,3 +56,4 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+amplify/backend/auth/test17c0f94b/build/parameters.json
