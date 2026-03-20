@@ -1,6 +1,6 @@
 import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
-import AmplifyProvider from '@/app/ui/AmplifyProvider';
+import AmplifyProviderLoader from '@/app/ui/AmplifyProviderLoader';
 
 export default function RootLayout({
   children,
@@ -10,8 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
-        <AmplifyProvider>{children}</AmplifyProvider>
+        <AmplifyProviderLoader>{children}</AmplifyProviderLoader>
       </body>
     </html>
   );
 }
+

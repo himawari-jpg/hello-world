@@ -17,8 +17,8 @@
       "profile",
       "aws.cognito.signin.user.admin"
     ],
-    "redirectSignIn": "https://main.d2rymvckat8co9.amplifyapp.com/dashboard/",
-    "redirectSignOut": "https://main.d2rymvckat8co9.amplifyapp.com/dashboard/",
+    "redirectSignIn": "https://main.d3rgmcgeg61hb0.amplifyapp.com/dashboard/",
+    "redirectSignOut": "https://main.d3rgmcgeg61hb0.amplifyapp.com/dashboard/",
     "responseType": "code"
   },
   "federationTarget": "COGNITO_USER_POOLS",
