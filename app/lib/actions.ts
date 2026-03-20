@@ -5,7 +5,11 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import postgres from 'postgres';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+let _sql: ReturnType<typeof postgres> | null = null;
+function db() {
+  if (!_sql) _sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+  return _sql;
+}
 
 const FormSchema = z.object({
     id: z.string(),
@@ -48,7 +52,7 @@ const FormSchema = z.object({
     const date = new Date().toISOString().split('T')[0];
 
     try {
-      await sql`
+      await db()`
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
       `;
@@ -90,7 +94,7 @@ export async function updateInvoice(
   const amountInCents = amount * 100;
  
   try {
-    await sql`
+    await db()`
       UPDATE invoices
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
@@ -104,7 +108,7 @@ export async function updateInvoice(
 }
 
 export async function deleteInvoice(id: string) {
-  await sql`DELETE FROM invoices WHERE id = ${id}`;
+  await db()`DELETE FROM invoices WHERE id = ${id}`;
   revalidatePath('/dashboard/invoices');
 }
 

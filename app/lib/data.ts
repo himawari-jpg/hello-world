@@ -9,7 +9,11 @@ import {
 } from './definitions';
 import { formatCurrency } from './utils';
 
-const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+let _sql: ReturnType<typeof postgres> | null = null;
+function db() {
+  if (!_sql) _sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+  return _sql;
+}
 
 export async function fetchRevenue() {
   try {
@@ -19,7 +23,7 @@ export async function fetchRevenue() {
     console.log('Fetching revenue data...');
     await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    const data = await sql<Revenue[]>`SELECT * FROM revenue`;
+    const data = await db()<Revenue[]>`SELECT * FROM revenue`;
 
     console.log('Data fetch completed after 3 seconds.');
 
@@ -32,7 +36,7 @@ export async function fetchRevenue() {
 
 export async function fetchLatestInvoices() {
   try {
-    const data = await sql<LatestInvoiceRaw[]>`
+    const data = await db()<LatestInvoiceRaw[]>`
       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
       FROM invoices
       JOIN customers ON invoices.customer_id = customers.id
@@ -55,9 +59,9 @@ export async function fetchCardData() {
     // You can probably combine these into a single SQL query
     // However, we are intentionally splitting them to demonstrate
     // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
+    const invoiceCountPromise = db()`SELECT COUNT(*) FROM invoices`;
+    const customerCountPromise = db()`SELECT COUNT(*) FROM customers`;
+    const invoiceStatusPromise = db()`SELECT
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
@@ -93,7 +97,7 @@ export async function fetchFilteredInvoices(
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
-    const invoices = await sql<InvoicesTable[]>`
+    const invoices = await db()<InvoicesTable[]>`
       SELECT
         invoices.id,
         invoices.amount,
@@ -123,7 +127,7 @@ export async function fetchFilteredInvoices(
 
 export async function fetchInvoicesPages(query: string) {
   try {
-    const data = await sql`SELECT COUNT(*)
+    const data = await db()`SELECT COUNT(*)
     FROM invoices
     JOIN customers ON invoices.customer_id = customers.id
     WHERE
@@ -144,7 +148,7 @@ export async function fetchInvoicesPages(query: string) {
 
 export async function fetchInvoiceById(id: string) {
   try {
-    const data = await sql<InvoiceForm[]>`
+    const data = await db()<InvoiceForm[]>`
       SELECT
         invoices.id,
         invoices.customer_id,
@@ -170,7 +174,7 @@ export async function fetchInvoiceById(id: string) {
 
 export async function fetchCustomers() {
   try {
-    const customers = await sql<CustomerField[]>`
+    const customers = await db()<CustomerField[]>`
       SELECT
         id,
         name
@@ -187,7 +191,7 @@ export async function fetchCustomers() {
 
 export async function fetchFilteredCustomers(query: string) {
   try {
-    const data = await sql<CustomersTableType[]>`
+    const data = await db()<CustomersTableType[]>`
 		SELECT
 		  customers.id,
 		  customers.name,
