@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { lusitana } from '@/app/ui/fonts';
 
-type Step = 'view' | 'edit' | 'confirm';
+type Step = 'view' | 'edit' | 'confirm' | 'change-password';
 
 export default function ProfileForm() {
   const [step, setStep] = useState<Step>('view');
@@ -99,6 +99,15 @@ export default function ProfileForm() {
 
   if (loading && step === 'view' && Object.keys(attributes).length === 0) {
     return <p className="text-sm text-gray-500">Loading profile…</p>;
+  }
+
+  if (step === 'change-password') {
+    return (
+      <ChangePasswordSection
+        onBack={() => setStep('view')}
+        onSuccess={(msg) => { setSuccess(msg); setStep('view'); }}
+      />
+    );
   }
 
   // 確認コード入力画面
@@ -240,12 +249,134 @@ export default function ProfileForm() {
         </div>
       </div>
 
-      <button
-        onClick={() => { setStep('edit'); setSuccess(''); }}
-        className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
-      >
-        Edit profile
-      </button>
+      <div className="flex flex-col gap-2">
+        <button
+          onClick={() => { setStep('edit'); setSuccess(''); }}
+          className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500"
+        >
+          Edit profile
+        </button>
+        <button
+          onClick={() => { setStep('change-password'); setSuccess(''); setError(''); }}
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+        >
+          Change password
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ChangePasswordSection({
+  onBack,
+  onSuccess,
+}: {
+  onBack: () => void;
+  onSuccess: (msg: string) => void;
+}) {
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (newPassword !== confirmNewPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { updatePassword } = await import('aws-amplify/auth');
+      await updatePassword({ oldPassword, newPassword });
+      onSuccess('Password updated successfully.');
+      onBack();
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Failed to update password.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4 rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+      <h2 className={`${lusitana.className} text-xl font-bold text-gray-900`}>Change Password</h2>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">{error}</div>
+      )}
+
+      <form onSubmit={handleUpdatePassword} className="flex flex-col gap-4">
+        <div>
+          <label htmlFor="oldPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
+            Current password
+          </label>
+          <input
+            id="oldPassword"
+            type="password"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="newPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
+            New password
+          </label>
+          <input
+            id="newPassword"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="new-password"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            placeholder="••••••••"
+          />
+          <p className="mt-1 text-xs text-gray-400">Minimum 8 characters</p>
+        </div>
+
+        <div>
+          <label htmlFor="confirmNewPassword" className="mb-1.5 block text-sm font-medium text-gray-700">
+            Confirm new password
+          </label>
+          <input
+            id="confirmNewPassword"
+            type="password"
+            value={confirmNewPassword}
+            onChange={(e) => setConfirmNewPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
+          >
+            {loading ? 'Updating…' : 'Update password'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

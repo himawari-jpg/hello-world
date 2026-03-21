@@ -35,7 +35,7 @@ export default function LoginForm() {
           setError('Email not verified. Please check your inbox for a verification code.');
           break;
         case 'RESET_PASSWORD':
-          setError('You need to reset your password.');
+          router.push('/forgot-password');
           break;
         case 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED':
           setError('A new password is required. Please contact support.');
@@ -98,6 +98,9 @@ export default function LoginForm() {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
+            <Link href="/forgot-password" className="text-xs font-medium text-blue-600 hover:text-blue-500">
+              Forgot password?
+            </Link>
           </div>
           <input
             id="password"
