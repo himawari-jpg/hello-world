@@ -13,10 +13,14 @@ const socialProviders = [
   { id: 'Amazon', label: 'Continue with Amazon', icon: <FaAmazon size={20} className="text-[#FF9900]" /> },
 ];
 
+type Step = 'signin' | 'totp';
+
 export default function LoginForm() {
   const router = useRouter();
+  const [step, setStep] = useState<Step>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totpCode, setTotpCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -30,6 +34,9 @@ export default function LoginForm() {
       switch (nextStep.signInStep) {
         case 'DONE':
           router.push('/dashboard');
+          break;
+        case 'CONFIRM_SIGN_IN_WITH_TOTP_CODE':
+          setStep('totp');
           break;
         case 'CONFIRM_SIGN_UP':
           setError('Email not verified. Please check your inbox for a verification code.');
@@ -54,11 +61,87 @@ export default function LoginForm() {
     }
   };
 
+  const handleTotpConfirm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const { confirmSignIn } = await import('aws-amplify/auth');
+      const { nextStep } = await confirmSignIn({ challengeResponse: totpCode });
+      if (nextStep.signInStep === 'DONE') {
+        router.push('/dashboard');
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Verification failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSocialSignIn = async (provider: string) => {
     const { signInWithRedirect } = await import('aws-amplify/auth');
     await signInWithRedirect({ provider: provider as 'Google' | 'Facebook' | 'Amazon' });
   };
 
+  // TOTP確認画面
+  if (step === 'totp') {
+    return (
+      <div className="flex flex-col gap-4 rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
+        <div>
+          <h2 className={`${lusitana.className} text-2xl font-bold text-gray-900`}>
+            Two-factor authentication
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Enter the 6-digit code from your authenticator app.
+          </p>
+        </div>
+
+        {error && (
+          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleTotpConfirm} className="flex flex-col gap-4">
+          <div>
+            <label htmlFor="totpCode" className="mb-1.5 block text-sm font-medium text-gray-700">
+              Authentication code
+            </label>
+            <input
+              id="totpCode"
+              type="text"
+              inputMode="numeric"
+              value={totpCode}
+              onChange={(e) => setTotpCode(e.target.value)}
+              required
+              maxLength={6}
+              autoFocus
+              className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-center text-xl font-mono tracking-widest text-gray-900 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              placeholder="000000"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:opacity-50"
+          >
+            {loading ? 'Verifying…' : 'Verify'}
+          </button>
+        </form>
+
+        <button
+          type="button"
+          onClick={() => { setStep('signin'); setError(''); setTotpCode(''); }}
+          className="text-center text-sm text-blue-600 hover:text-blue-500"
+        >
+          ← Back to sign in
+        </button>
+      </div>
+    );
+  }
+
+  // 通常のサインイン画面
   return (
     <div className="flex flex-col gap-4 rounded-xl bg-white p-8 shadow-sm ring-1 ring-gray-200">
       <div>
