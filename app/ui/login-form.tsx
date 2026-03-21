@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { lusitana } from '@/app/ui/fonts';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { FcGoogle } from 'react-icons/fc';
+import { FaFacebook, FaAmazon } from 'react-icons/fa';
 
 const socialProviders = [
-  { id: 'Google', label: 'Continue with Google' },
-  { id: 'Facebook', label: 'Continue with Facebook' },
-  { id: 'Amazon', label: 'Continue with Amazon' },
+  { id: 'Google', label: 'Continue with Google', icon: <FcGoogle size={20} /> },
+  { id: 'Facebook', label: 'Continue with Facebook', icon: <FaFacebook size={20} className="text-[#1877F2]" /> },
+  { id: 'Amazon', label: 'Continue with Amazon', icon: <FaAmazon size={20} className="text-[#FF9900]" /> },
 ];
 
 export default function LoginForm() {
@@ -125,13 +127,14 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-2">
-        {socialProviders.map(({ id, label }) => (
+        {socialProviders.map(({ id, label, icon }) => (
           <button
             key={id}
             type="button"
             onClick={() => handleSocialSignIn(id)}
-            className="flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="flex w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
+            {icon}
             {label}
           </button>
         ))}
