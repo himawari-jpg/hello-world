@@ -28,10 +28,14 @@ export default function SignupForm() {
       const { nextStep } = await signUp({
         username: email,
         password,
-        options: { userAttributes: { email } },
+        options: { userAttributes: { email }, autoSignIn: true },
       });
       if (nextStep.signUpStep === 'CONFIRM_SIGN_UP') {
         setStep('confirm');
+      } else if (nextStep.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {
+        const { autoSignIn } = await import('aws-amplify/auth');
+        await autoSignIn();
+        router.push('/dashboard');
       } else if (nextStep.signUpStep === 'DONE') {
         router.push('/login');
       }
@@ -48,9 +52,11 @@ export default function SignupForm() {
     setError('');
     setLoading(true);
     try {
-      const { confirmSignUp, signIn } = await import('aws-amplify/auth');
-      await confirmSignUp({ username: email, confirmationCode: code });
-      await signIn({ username: email, password });
+      const { confirmSignUp, autoSignIn } = await import('aws-amplify/auth');
+      const { nextStep: confirmStep } = await confirmSignUp({ username: email, confirmationCode: code });
+      if (confirmStep.signUpStep === 'COMPLETE_AUTO_SIGN_IN') {
+        await autoSignIn();
+      }
       router.push('/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);

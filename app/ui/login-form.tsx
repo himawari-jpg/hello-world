@@ -25,8 +25,21 @@ export default function LoginForm() {
     try {
       const { signIn } = await import('aws-amplify/auth');
       const { nextStep } = await signIn({ username: email, password });
-      if (nextStep.signInStep === 'DONE') {
-        router.push('/dashboard');
+      switch (nextStep.signInStep) {
+        case 'DONE':
+          router.push('/dashboard');
+          break;
+        case 'CONFIRM_SIGN_UP':
+          setError('Email not verified. Please check your inbox for a verification code.');
+          break;
+        case 'RESET_PASSWORD':
+          setError('You need to reset your password.');
+          break;
+        case 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED':
+          setError('A new password is required. Please contact support.');
+          break;
+        default:
+          setError(`Additional verification required: ${nextStep.signInStep}`);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
