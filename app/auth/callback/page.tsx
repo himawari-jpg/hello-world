@@ -41,7 +41,7 @@ export default function AuthCallbackPage() {
 
   return (
     <div className="flex h-screen items-center justify-center">
-      <p className="text-gray-500">サインイン処理中...</p>
+      <p className="text-gray-500">Signing you in...</p>
     </div>
   );
 }
