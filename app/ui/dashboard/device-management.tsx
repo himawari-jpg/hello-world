@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { lusitana } from '@/app/ui/fonts';
-import { DeviceType } from 'aws-amplify/auth';
+import type { FetchDevicesOutput } from 'aws-amplify/auth';
+
+type Device = FetchDevicesOutput[number];
 
 export default function DeviceManagement() {
-  const [devices, setDevices] = useState<DeviceType[]>([]);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -40,7 +42,7 @@ export default function DeviceManagement() {
     }
   };
 
-  const handleForgetDevice = async (device: DeviceType) => {
+  const handleForgetDevice = async (device: Device) => {
     setError('');
     setSuccess('');
     try {
