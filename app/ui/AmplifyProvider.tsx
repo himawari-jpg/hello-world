@@ -18,6 +18,21 @@ export default function AmplifyProvider({ children }: { children: React.ReactNod
 
     const unsubscribe = Hub.listen('auth', ({ payload }) => {
       switch (payload.event) {
+        case 'signedIn':
+          console.log('User signed in');
+          router.push('/dashboard');
+          break;
+        case 'signedOut':
+          console.log('User signed out');
+          router.push('/login');
+          break;
+        case 'tokenRefresh':
+          console.log('Token refreshed successfully');
+          break;
+        case 'tokenRefresh_failure':
+          console.error('Token refresh failed');
+          router.push('/login');
+          break;
         case 'signInWithRedirect':
           getCurrentUser().then(() => {
             router.push('/dashboard');
