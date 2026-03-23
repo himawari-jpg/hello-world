@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { lusitana } from '@/app/ui/fonts';
 
-type Step = 'view' | 'edit' | 'confirm' | 'change-password';
+type Step = 'view' | 'edit' | 'confirm' | 'change-password' | 'delete-confirm';
 
 export default function ProfileForm() {
   const [step, setStep] = useState<Step>('view');
@@ -99,6 +99,12 @@ export default function ProfileForm() {
 
   if (loading && step === 'view' && Object.keys(attributes).length === 0) {
     return <p className="text-sm text-gray-500">Loading profile…</p>;
+  }
+
+  if (step === 'delete-confirm') {
+    return (
+      <DeleteAccountSection onCancel={() => setStep('view')} />
+    );
   }
 
   if (step === 'change-password') {
@@ -261,6 +267,64 @@ export default function ProfileForm() {
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
         >
           Change password
+        </button>
+        <button
+          onClick={() => { setStep('delete-confirm'); setSuccess(''); setError(''); }}
+          className="w-full rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50"
+        >
+          Delete account
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DeleteAccountSection({ onCancel }: { onCancel: () => void }) {
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const { deleteUser } = await import('aws-amplify/auth');
+      await deleteUser();
+      // deleteUser はサインアウトも行うため、Hub の signedOut イベントが /login へリダイレクトする
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Failed to delete account.');
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4 rounded-xl bg-white p-8 shadow-sm ring-1 ring-red-200">
+      <div>
+        <h2 className={`text-xl font-bold text-gray-900`}>Delete account</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          This action is permanent and cannot be undone. Your account and all associated data will be deleted.
+        </p>
+      </div>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-200">{error}</div>
+      )}
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={loading}
+          className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-red-500 disabled:opacity-50"
+        >
+          {loading ? 'Deleting…' : 'Yes, delete my account'}
         </button>
       </div>
     </div>
